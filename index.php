@@ -28,6 +28,8 @@
                 ?>
             </table>
         </div>
+        <div class="d-flex justify-content-center" id="result">
+
     </div>
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -36,7 +38,8 @@
     
     <script>
         $(function(){
-            $("button").on('click', function(){
+            $("button").on('click', function(){ 
+                gameOverStatus = false; // Globally declared, TODO: refactor
                 var humanSelectedButtonId = $(this).attr('id');
                 // console.log(humanSelectedButtonId);
                 // console.log($(this).data('occupied'));
@@ -52,16 +55,19 @@
                         $(this).addClass('disabled');
                     });
 
-                    checkWinStatus(humanSelectedButtonId, "human");
+                    // Check if we have win combinations
+                    gameOverStatus = checkWinStatus(humanSelectedButtonId, "human");
 
-
-                    // Run the machine turn
-                    setTimeout(() => {
-                        machineTurn();
-                    }, 2000); 
+                    if(!gameOverStatus){
+                        // Run the machine turn
+                        setTimeout(() => {
+                            machineTurn();
+                        }, 2000); 
+                    }
                 }
             });
-
+        });
+        
             function machineTurn(){
                  var possibleChoices = $('[data-occupied="0"]');
                  var numberOfPossibleChoices = possibleChoices.length;
@@ -75,7 +81,7 @@
                 $(machineButtonClicked).removeClass('btn-secondary');
                 $(machineButtonClicked).text('O');
                 $(machineButtonClicked).attr('data-occupied', 1);
-                $(machineButtonClicked).attr('data-player', 'computer');
+                $(machineButtonClicked).attr('data-player', 'machine');
 
                 // Re enable the buttons
                 $('[data-occupied="0"]').each(function(){
@@ -85,7 +91,7 @@
                 checkWinStatus(machineButtonClickedId, "machine");
                 //  console.log(possibleChoices, numberOfPossibleChoices, machineRandomChoice, machineButtonClicked, machineButtonClickedId);
             }
-            4. Checking for a Win - the Main Logic.mp4
+            
             function checkWinStatus(selectedButtonId, player){
                 console.log(selectedButtonId, player);
                 var winCombination = [
@@ -98,10 +104,45 @@
                     [1,5,9],
                     [3,5,7],
                 ];
+
+                //  Loop the win combinations with the passed selectedButton
+                $.each(winCombination, function (indexInArray, winPositions) { 
+                    // console.log(indexInArray, winPositions);
+                    var winCount = 0; 
+                    // If we have the btn-id contained in the arr[] of combination-ids
+                    if($.inArray(selectedButtonId, winPositions)){
+                        $.each(winPositions, function(key, value){
+                            var playerValue = $("#" + value).attr('data-player');
+                            
+                            // Check the assigned attr data-player => for the #btn clicked
+                            if(playerValue == player){
+                                winCount++;
+                                // console.log(winCount);
+                                if(winCount == 3){ 
+                                    window.gameOverStatus = true; // Globally accessed, TODO: refact
+                                    gameOver(player);
+                                }
+                            }
+                        });
+                    }
+                });
+                return window.gameOverStatus; 
             }
-        });
-        // console.log($(".customButton").val());
-        // $('button').text('asdasd');
+
+            function gameOver(player){
+                // console.log('Player won is: ' + player);
+                 // Temp disable the buttons
+                 $('button').each(function(){
+                        $(this).addClass('disabled');
+                    });
+                if(player == 'human'){
+                    $('#result').html("<div class='text-center col-6 alert alert-success'>You Won !</div>");
+                }else{
+                    $('#result').html("<div class='text-center col-6 alert alert-success'>You Lost !</div>");
+                }
+            }
+            
+        
     </script>
   </body>
 </html>
