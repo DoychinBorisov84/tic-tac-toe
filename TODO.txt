@@ -1,0 +1,5 @@
+# Add Scores, save, history
+
+# Custom icons for players choice, Dropdown
+
+
